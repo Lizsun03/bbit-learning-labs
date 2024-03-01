@@ -8,28 +8,27 @@ class mqConsumer(mqConsumerInterface):
     def setupRMQConnection(self) -> None:
         # Set-up Connection to RabbitMQ service
         con_params = pika.URLParameters(os.environ["AMQP_URL"])
-        connection = pika.BlockingConnection(parameters=con_params)
-    
+        self.connection = pika.BlockingConnection(parameters=con_params)
     
         # Establish Channel
-        channel = connection.channel()
+        self.channel = self.connection.channel()
         # Create Queue if not already present
-        channel.queue_declare(queue="Tech Lab Queue")
+        self.channel.queue_declare(queue=self.queue_name)
 
         # Create the exchange if not already present
-        exchange = channel.exchange_declare(exchange = "Tech Lab Exchange")
+        exchange = self.channel.exchange_declare(exchange=self.exchange_name)
 
         # Bind Binding Key to Queue on the exchange
-        channel.queue_bind(
-            queue = "Tech Lab Queue",
-            routing_key="Tech Lab Key",
-            exchange="Tech Lab Exchange"
+        self.channel.queue_bind(
+            queue = self.queue_name,
+            routing_key=self.binding_key,
+            exchange=self.exchange_name
         )
 
 
         # Set-up Callback function for receiving messages
-        channel.basic_consume(
-            "queue", self.on_message_callback, auto_ack=False
+        self.channel.basic_consume(
+            self.queue_name, self.on_message_callback, auto_ack=False
         )
         #pass
 
@@ -68,5 +67,8 @@ class mqConsumer(mqConsumerInterface):
         self.binding_key = binding_key
         self.exchange_name = exchange_name
         self.queue_name = queue_name
+        self.connection = None
+        self.channel = None
         # Call setupRMQConnection
         self.setupRMQConnection()
+
