@@ -10,26 +10,28 @@ class mqConsumer(mqConsumerInterface):
         con_params = pika.URLParameters(os.environ["AMQP_URL"])
         connection = pika.BlockingConnection(parameters=con_params)
     
+    
         # Establish Channel
         channel = connection.channel()
         # Create Queue if not already present
-        channel.queue_declare(queue="queue")
+        channel.queue_declare(queue="Tech Lab Queue")
 
         # Create the exchange if not already present
-        exchange = channel.exchange_declare(exchange = "exchange")
+        exchange = channel.exchange_declare(exchange = "Tech Lab Exchange")
 
         # Bind Binding Key to Queue on the exchange
         channel.queue_bind(
-            queue = "queue",
-            routing_key="Routing Key",
-            exchange="exchange"
+            queue = "Tech Lab Queue",
+            routing_key="Tech Lab Key",
+            exchange="Tech Lab Exchange"
         )
+
 
         # Set-up Callback function for receiving messages
         channel.basic_consume(
             "queue", self.on_message_callback, auto_ack=False
         )
-        pass
+        #pass
 
     def on_message_callback(
         self, channel, method_frame, header_frame, body
